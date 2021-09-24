@@ -15,6 +15,13 @@ public class TrumpGame {
     private static int selectNumberInt;
     private static String selectNumber = "初期値";
     private static String selectMark;
+    private static int selectMarkIntInitializer = -1;
+    private static int selectNumberIntInitializer = -1;
+    private static int minSelectMarkInt = 0;
+    private static int offSetSelectNumberInt = -1;
+    private static int startcount = 0;
+    private static String  inputStrInitializer = "あ";
+    private static int minSelectNumber = 0;
     private static final List<String> MARKLIST = new ArrayList<String>() {
         {
             add("ダイヤ");
@@ -49,7 +56,6 @@ public class TrumpGame {
     public static void main(String[] args) {
         decisionTargetMark();
         decisionTargetNumber();
-        System.out.println("答え　" + targetMark + targetNumber);
         showFirstMessage();
         showMarkQuestionMessage();
         showNumberOfMark();
@@ -74,14 +80,15 @@ public class TrumpGame {
     }
 
     private static void receiveinputMarkInt() {
-        do{
+        selectMarkInt = selectMarkIntInitializer;
+        while(!isMarkAppropriate()){
         selectMarkInt = receiveinputNumber();
-        }while(!isMarkAppropriate());
+        }
         selectMark = MARKLIST.get(selectMarkInt);
     }
 
     private static boolean isMarkAppropriate(){
-        if(selectMarkInt < 0){
+        if(selectMarkInt < minSelectMarkInt){
             return false;
         }
         if(selectMarkInt >= MARKLIST.size()){
@@ -91,7 +98,7 @@ public class TrumpGame {
     }
 
     private static boolean isNumberAppropriate(){
-        if(selectNumberInt <= 0){
+        if(selectNumberInt <= minSelectNumber){
             return false;
         }
         if(selectNumberInt > NUMBERLIST.size()){
@@ -101,14 +108,15 @@ public class TrumpGame {
     }
 
     private static void receiveinputNumberInt() {
-        do{
+        selectNumberInt = selectNumberIntInitializer;
+        while(!isNumberAppropriate()){
             selectNumberInt = receiveinputNumber();
-            }while(!isNumberAppropriate());
-        selectNumber = NUMBERLIST.get(selectNumberInt -1);
+        }
+        selectNumber = NUMBERLIST.get(selectNumberInt + offSetSelectNumberInt);
     }
 
     private static void showNumberOfMark() {
-        int count = 0;
+        int count = startcount;
         for (String mark : MARKLIST) {
             System.out.println(String.format("%s:%s", count, mark));
             count++;
@@ -158,10 +166,10 @@ public class TrumpGame {
     }
 
     private static int receiveinputNumber() {
-        String inputStr;
-        do {
+        String inputStr = inputStrInitializer;
+        while (!isNumber(inputStr)){
             inputStr = STDIN.nextLine();
-        } while (!isNumber(inputStr));
+        }
         inputNumber = Integer.parseInt(inputStr);
         return inputNumber;
     }
