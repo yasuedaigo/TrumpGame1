@@ -13,16 +13,13 @@ public class TrumpGame {
     private static int targetNumberInt;
     private static int selectMarkInt;
     private static int selectNumberInt;
-    private static String selectNumber = "初期値";
+    private static String selectNumber;
     private static String selectMark;
-    private static int selectMarkIntInitializer = -1;
-    private static int selectNumberIntInitializer = -1;
     private static int minSelectMarkInt = 0;
     private static int offSetSelectNumberInt = -1;
     private static int startcount = 0;
-    private static String  inputStrInitializer = "あ";
     private static int minSelectNumber = 0;
-    private static final List<String> MARKLIST = new ArrayList<String>() {
+    private static final List<String> MARKLIST = new ArrayList<>() {
         {
             add("ダイヤ");
             add("スペード");
@@ -30,7 +27,7 @@ public class TrumpGame {
             add("ハート");
         }
     };
-    private static final List<String> NUMBERLIST = new ArrayList<String>() {
+    private static final List<String> NUMBERLIST = new ArrayList<>() {
         {
             add("A");
             add("2");
@@ -54,87 +51,79 @@ public class TrumpGame {
     private static final String NUMBER_QUESTION_MESSAGE = "次は数字を当ててね";
 
     public static void main(String[] args) {
-        decisionTargetMark();
-        decisionTargetNumber();
+        targetMark = decisionTargetMark(MARKLIST);
+        targetNumber = decisionTargetNumber(NUMBERLIST);
         showFirstMessage();
         showMarkQuestionMessage();
-        showNumberOfMark();
-        while (true) {
+        showMenuOfMark(MARKLIST);
+        while (!isSameMark(targetMarkInt,selectMarkInt)) {
             showQuestionMessage();
-            receiveinputMarkInt();
+            selectMark = receiveinputMarkInt();
             showMarkResultMessage();
-            if (isCorrectMark()) {
-                break;
-            }
         }
         showNumberQuestionMessage();
-        while (true) {
+        while (!isSameNumber(targetNumber, selectNumber)) {
             showQuestionMessage();
-            receiveinputNumberInt();
+            selectNumber = receiveinputNumberInt();
             showNumberResultMessage();
-            if (isCorrectNumber()) {
-                break;
-            }
         }
         STDIN.close();
     }
 
-    private static void receiveinputMarkInt() {
-        selectMarkInt = selectMarkIntInitializer;
-        while(!isMarkAppropriate()){
-        selectMarkInt = receiveinputNumber();
-        }
-        selectMark = MARKLIST.get(selectMarkInt);
+    private static String receiveinputMarkInt() {
+        do {
+            selectMarkInt = receiveinputNumber();
+        } while (!isInRangeOfMark(selectMarkInt,MARKLIST));
+        return MARKLIST.get(selectMarkInt);
     }
 
-    private static boolean isMarkAppropriate(){
-        if(selectMarkInt < minSelectMarkInt){
+    private static boolean isInRangeOfMark(int selectMarkInt,List<String> markLIST) {
+        if (selectMarkInt < minSelectMarkInt) {
             return false;
         }
-        if(selectMarkInt >= MARKLIST.size()){
+        if (selectMarkInt >= markLIST.size()) {
             return false;
         }
         return true;
     }
 
-    private static boolean isNumberAppropriate(){
-        if(selectNumberInt <= minSelectNumber){
+    private static boolean isInRangeOfNumber(int selectNumberInt,List<String> numberList) {
+        if (selectNumberInt <= minSelectNumber) {
             return false;
         }
-        if(selectNumberInt > NUMBERLIST.size()){
+        if (selectNumberInt > numberList.size()) {
             return false;
         }
         return true;
     }
 
-    private static void receiveinputNumberInt() {
-        selectNumberInt = selectNumberIntInitializer;
-        while(!isNumberAppropriate()){
+    private static String receiveinputNumberInt() {
+        do {
             selectNumberInt = receiveinputNumber();
-        }
-        selectNumber = NUMBERLIST.get(selectNumberInt + offSetSelectNumberInt);
+        } while (!isInRangeOfNumber(selectNumberInt,NUMBERLIST));
+        return NUMBERLIST.get(selectNumberInt + offSetSelectNumberInt);
     }
 
-    private static void showNumberOfMark() {
+    private static void showMenuOfMark(List<String> markList) {
         int count = startcount;
-        for (String mark : MARKLIST) {
+        for (String mark : markList) {
             System.out.println(String.format("%s:%s", count, mark));
             count++;
         }
     }
 
-    private static void decisionTargetMark() {
-        targetMarkInt = RANDOM.nextInt(MARKLIST.size());
-        targetMark = MARKLIST.get(targetMarkInt);
+    private static String decisionTargetMark(List<String> markList) {
+        targetMarkInt = RANDOM.nextInt(markList.size());
+        return markList.get(targetMarkInt);
     }
 
-    private static void decisionTargetNumber() {
-        targetNumberInt = RANDOM.nextInt(NUMBERLIST.size());
-        targetNumber = NUMBERLIST.get(targetNumberInt);
+    private static String decisionTargetNumber(List<String> numberList) {
+        targetNumberInt = RANDOM.nextInt(numberList.size());
+        return numberList.get(targetNumberInt);
     }
 
     private static void showMarkResultMessage() {
-        if (isCorrectMark()) {
+        if (isSameMark(targetMarkInt, selectMarkInt)) {
             System.out.println(String.format("正解！図柄は%sだよ", targetMark));
             return;
         }
@@ -142,7 +131,7 @@ public class TrumpGame {
     }
 
     private static void showNumberResultMessage() {
-        if (isCorrectNumber()) {
+        if (isSameNumber(targetNumber, selectNumber)) {
             System.out.println(String.format("正解！%sの%sだよ", targetMark, targetNumber));
             return;
         }
@@ -166,10 +155,10 @@ public class TrumpGame {
     }
 
     private static int receiveinputNumber() {
-        String inputStr = inputStrInitializer;
-        while (!isNumber(inputStr)){
+        String inputStr;
+        do {
             inputStr = STDIN.nextLine();
-        }
+        } while (!isNumber(inputStr));
         inputNumber = Integer.parseInt(inputStr);
         return inputNumber;
     }
@@ -183,14 +172,15 @@ public class TrumpGame {
         }
     }
 
-    private static boolean isCorrectMark() {
+    private static boolean isSameMark(int targetMarkInt, int selectMarkInt) {
+
         if (targetMarkInt == selectMarkInt) {
             return true;
         }
         return false;
     }
 
-    private static boolean isCorrectNumber() {
+    private static boolean isSameNumber(String targetNumber, String selectNumber) {
         if (targetNumber == selectNumber) {
             return true;
         }
