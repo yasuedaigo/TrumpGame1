@@ -1,24 +1,16 @@
 import java.util.Scanner;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class TrumpGame {
+    private static enum Phase {Mark,Number};
     private static int inputNumber;
     private static final Random RANDOM = new Random();
     private static final Scanner STDIN = new Scanner(System.in);
-    private static String targetMark;
-    private static String targetNumber;
-    private static int targetMarkInt;
-    private static int targetNumberInt;
-    private static int selectMarkInt;
-    private static int selectNumberInt;
-    private static String selectNumber;
-    private static String selectMark;
-    private static int minSelectMarkInt = 0;
     private static int offSetSelectNumberInt = -1;
     private static int startcount = 0;
-    private static int minSelectNumber = 0;
     private static final List<String> MARKLIST = new ArrayList<>() {
         {
             add("ダイヤ");
@@ -51,57 +43,86 @@ public class TrumpGame {
     private static final String NUMBER_QUESTION_MESSAGE = "次は数字を当ててね";
 
     public static void main(String[] args) {
-        targetMark = decisionTargetMark(MARKLIST);
-        targetNumber = decisionTargetNumber(NUMBERLIST);
+        Phase nowPhase = Phase.Mark;
+        String correctMark = decisionCorrectMark(MARKLIST);
+        String correctNumber = decisionCorrectNumber(NUMBERLIST);
+        System.out.println(correctMark+correctNumber);
         showFirstMessage();
         showMarkQuestionMessage();
         showMenuOfMark(MARKLIST);
-        while (!isSameMark(targetMarkInt,selectMarkInt)) {
-            showQuestionMessage();
-            selectMark = receiveinputMarkInt();
-            showMarkResultMessage();
-        }
+        playGuessMark(nowPhase,correctMark);
+        nowPhase = Phase.Number;
         showNumberQuestionMessage();
-        while (!isSameNumber(targetNumber, selectNumber)) {
-            showQuestionMessage();
-            selectNumber = receiveinputNumberInt();
-            showNumberResultMessage();
-        }
+        playGuessNumber(nowPhase,correctNumber,correctMark);
         STDIN.close();
     }
 
-    private static String receiveinputMarkInt() {
+    private static String receivePlayerSelect(Phase nowPhase) {
+        int inputNumber = receiveinput();
+        try {
+            String selectTrumpElement = convertToTrumpElement(nowPhase,inputNumber);
+            return selectTrumpElement;
+        } catch (Exception e) {
+            return receivePlayerSelect(nowPhase);
+        }
+    }
+
+    private static void playGuessMark(Phase nowPhase,String correctMark){
+        showQuestionMessage();
+        String selectMark = receivePlayerSelect(nowPhase);
+        showMarkResultMessage(correctMark,selectMark);
+        if(!isCorrect(selectMark,correctMark)){
+            playGuessMark(nowPhase,correctMark);
+        }
+    }
+
+    private static void playGuessNumber(Phase nowPhase,String correctNumber,String correctMark){
+        showQuestionMessage();
+        String selectNumber = receivePlayerSelect(nowPhase);
+        showNumberResultMessage(correctMark,selectNumber,correctNumber);
+        if(!isCorrect(selectNumber,correctNumber)){
+            playGuessNumber(nowPhase,correctNumber,correctMark);
+        }
+    }
+
+    private static String decisionCorrectMark(List<String> markList) {
+        int correctMarkInt = RANDOM.nextInt(markList.size());
+        return markList.get(correctMarkInt);
+    }
+
+    private static String decisionCorrectNumber(List<String> numberList) {
+        int correctNumberInt = RANDOM.nextInt(numberList.size());
+        return numberList.get(correctNumberInt);
+    }
+
+    private static int receiveinput() {
+        String inputStr;
         do {
-            selectMarkInt = receiveinputNumber();
-        } while (!isInRangeOfMark(selectMarkInt,MARKLIST));
-        return MARKLIST.get(selectMarkInt);
+            inputStr = STDIN.nextLine();
+        } while (!isNumber(inputStr));
+        inputNumber = Integer.parseInt(inputStr);
+        return inputNumber;
     }
 
-    private static boolean isInRangeOfMark(int selectMarkInt,List<String> markLIST) {
-        if (selectMarkInt < minSelectMarkInt) {
-            return false;
+    private static String convertToTrumpElement(Phase nowPhase,int inputNumber){
+        if(nowPhase == Phase.Mark){
+            return MARKLIST.get(inputNumber);
+        }else{
+            return NUMBERLIST.get(inputNumber + offSetSelectNumberInt);
         }
-        if (selectMarkInt >= markLIST.size()) {
-            return false;
-        }
-        return true;
     }
 
-    private static boolean isInRangeOfNumber(int selectNumberInt,List<String> numberList) {
-        if (selectNumberInt <= minSelectNumber) {
-            return false;
-        }
-        if (selectNumberInt > numberList.size()) {
-            return false;
-        }
-        return true;
+    private static boolean isCorrect(String selectValue, String correctValue){
+        return selectValue.equals(correctValue);
     }
 
-    private static String receiveinputNumberInt() {
-        do {
-            selectNumberInt = receiveinputNumber();
-        } while (!isInRangeOfNumber(selectNumberInt,NUMBERLIST));
-        return NUMBERLIST.get(selectNumberInt + offSetSelectNumberInt);
+    private static boolean isNumber(String inputStr) {
+        try {
+            Integer.parseInt(inputStr);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private static void showMenuOfMark(List<String> markList) {
@@ -112,27 +133,17 @@ public class TrumpGame {
         }
     }
 
-    private static String decisionTargetMark(List<String> markList) {
-        targetMarkInt = RANDOM.nextInt(markList.size());
-        return markList.get(targetMarkInt);
-    }
-
-    private static String decisionTargetNumber(List<String> numberList) {
-        targetNumberInt = RANDOM.nextInt(numberList.size());
-        return numberList.get(targetNumberInt);
-    }
-
-    private static void showMarkResultMessage() {
-        if (isSameMark(targetMarkInt, selectMarkInt)) {
-            System.out.println(String.format("正解！図柄は%sだよ", targetMark));
+    private static void showMarkResultMessage(String correctMark,String selectMark) {
+        if (isCorrect(correctMark, selectMark)) {
+            System.out.println(String.format("正解！図柄は%sだよ", correctMark));
             return;
         }
         System.out.println(String.format("残念！%sじゃないよ", selectMark));
     }
 
-    private static void showNumberResultMessage() {
-        if (isSameNumber(targetNumber, selectNumber)) {
-            System.out.println(String.format("正解！%sの%sだよ", targetMark, targetNumber));
+    private static void showNumberResultMessage(String correctMark,String selectNumber,String correctNumber) {
+        if (isCorrect(correctNumber, selectNumber)) {
+            System.out.println(String.format("正解！%sの%sだよ", correctMark, correctNumber));
             return;
         }
         System.out.println(String.format("残念！%sじゃないよ", selectNumber));
@@ -152,38 +163,5 @@ public class TrumpGame {
 
     private static void showNumberQuestionMessage() {
         System.out.println(NUMBER_QUESTION_MESSAGE);
-    }
-
-    private static int receiveinputNumber() {
-        String inputStr;
-        do {
-            inputStr = STDIN.nextLine();
-        } while (!isNumber(inputStr));
-        inputNumber = Integer.parseInt(inputStr);
-        return inputNumber;
-    }
-
-    private static boolean isNumber(String inputStr) {
-        try {
-            Integer.parseInt(inputStr);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private static boolean isSameMark(int targetMarkInt, int selectMarkInt) {
-
-        if (targetMarkInt == selectMarkInt) {
-            return true;
-        }
-        return false;
-    }
-
-    private static boolean isSameNumber(String targetNumber, String selectNumber) {
-        if (targetNumber == selectNumber) {
-            return true;
-        }
-        return false;
     }
 }
