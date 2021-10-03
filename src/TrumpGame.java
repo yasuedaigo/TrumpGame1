@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Random;
 
 public class TrumpGame {
-    private static enum Phase {Mark,Number};
+    private static enum Phase {
+        Mark, Number
+    };
+
     private static int inputNumber;
     private static final Random RANDOM = new Random();
     private static final Scanner STDIN = new Scanner(System.in);
@@ -46,42 +49,42 @@ public class TrumpGame {
         Phase nowPhase = Phase.Mark;
         String correctMark = decisionCorrectMark(MARKLIST);
         String correctNumber = decisionCorrectNumber(NUMBERLIST);
-        System.out.println(correctMark+correctNumber);
+        System.out.println(correctMark + correctNumber);
         showFirstMessage();
         showMarkQuestionMessage();
         showMenuOfMark(MARKLIST);
-        playGuessMark(nowPhase,correctMark);
+        playGuessMark(nowPhase, correctMark);
         nowPhase = Phase.Number;
         showNumberQuestionMessage();
-        playGuessNumber(nowPhase,correctNumber,correctMark);
+        playGuessNumber(nowPhase, correctNumber, correctMark);
         STDIN.close();
     }
 
     private static String receivePlayerSelect(Phase nowPhase) {
         int inputNumber = receiveinput();
         try {
-            String selectTrumpElement = convertToTrumpElement(nowPhase,inputNumber);
+            String selectTrumpElement = convertToTrumpElement(nowPhase, inputNumber);
             return selectTrumpElement;
         } catch (Exception e) {
             return receivePlayerSelect(nowPhase);
         }
     }
 
-    private static void playGuessMark(Phase nowPhase,String correctMark){
+    private static void playGuessMark(Phase nowPhase, String correctMark) {
         showQuestionMessage();
         String selectMark = receivePlayerSelect(nowPhase);
-        showMarkResultMessage(correctMark,selectMark);
-        if(!isCorrect(selectMark,correctMark)){
-            playGuessMark(nowPhase,correctMark);
+        showMarkResultMessage(correctMark, selectMark);
+        if (!isCorrect(selectMark, correctMark)) {
+            playGuessMark(nowPhase, correctMark);
         }
     }
 
-    private static void playGuessNumber(Phase nowPhase,String correctNumber,String correctMark){
+    private static void playGuessNumber(Phase nowPhase, String correctNumber, String correctMark) {
         showQuestionMessage();
         String selectNumber = receivePlayerSelect(nowPhase);
-        showNumberResultMessage(correctMark,selectNumber,correctNumber);
-        if(!isCorrect(selectNumber,correctNumber)){
-            playGuessNumber(nowPhase,correctNumber,correctMark);
+        showNumberResultMessage(correctMark, selectNumber, correctNumber);
+        if (!isCorrect(selectNumber, correctNumber)) {
+            playGuessNumber(nowPhase, correctNumber, correctMark);
         }
     }
 
@@ -97,22 +100,24 @@ public class TrumpGame {
 
     private static int receiveinput() {
         String inputStr;
-        do {
-            inputStr = STDIN.nextLine();
-        } while (!isNumber(inputStr));
+        inputStr = STDIN.nextLine();
+        if (!isNumber(inputStr)) {
+            inputNumber = receiveinput();
+            return inputNumber;
+        }
         inputNumber = Integer.parseInt(inputStr);
         return inputNumber;
     }
 
-    private static String convertToTrumpElement(Phase nowPhase,int inputNumber){
-        if(nowPhase == Phase.Mark){
+    private static String convertToTrumpElement(Phase nowPhase, int inputNumber) {
+        if (nowPhase == Phase.Mark) {
             return MARKLIST.get(inputNumber);
-        }else{
+        } else {
             return NUMBERLIST.get(inputNumber + offSetSelectNumberInt);
         }
     }
 
-    private static boolean isCorrect(String selectValue, String correctValue){
+    private static boolean isCorrect(String selectValue, String correctValue) {
         return selectValue.equals(correctValue);
     }
 
@@ -133,7 +138,7 @@ public class TrumpGame {
         }
     }
 
-    private static void showMarkResultMessage(String correctMark,String selectMark) {
+    private static void showMarkResultMessage(String correctMark, String selectMark) {
         if (isCorrect(correctMark, selectMark)) {
             System.out.println(String.format("正解！図柄は%sだよ", correctMark));
             return;
@@ -141,7 +146,7 @@ public class TrumpGame {
         System.out.println(String.format("残念！%sじゃないよ", selectMark));
     }
 
-    private static void showNumberResultMessage(String correctMark,String selectNumber,String correctNumber) {
+    private static void showNumberResultMessage(String correctMark, String selectNumber, String correctNumber) {
         if (isCorrect(correctNumber, selectNumber)) {
             System.out.println(String.format("正解！%sの%sだよ", correctMark, correctNumber));
             return;
